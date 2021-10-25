@@ -16,6 +16,9 @@ const int IN4 = 33;
 const int ENA_2 = 25;
 
 const int PHOTO_SENSOR_READ = 2;
+
+const int HC_OUT = 18;
+const int HC_IN = 19;
  
 // ESP32 specific PWM setup 
 const int freq = 100;
@@ -50,6 +53,9 @@ void setup()
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  pinMode(HC_OUT, OUTPUT);
+  pinMode(HC_IN, INPUT);
+  
   // L298N PWM setup
   ledcSetup(pwmChannel, freq, resolution);
   ledcAttachPin(ENA, pwmChannel);
@@ -317,4 +323,25 @@ void satu(){
   ledcWrite(pwmChannel, 0);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
+}
+
+int proximitySensorReadout(){
+  digitalWrite(HC_OUT, HIGH);
+  digitalWrite(HC_OUT, LOW);
+  byte tick = 0;
+  do{
+  tick++;}while(!digitalRead(HC_IN));
+  long timerstart = micros();
+
+  do{
+  tick++;}while(digitalRead(HC_IN));
+  long endtime = micros();
+
+  int result = endtime - timerstart;  //ez milisecben
+
+  int v = 343; //343 m/s
+  
+  int d = result / 58; //ez pontatlanabb megoldás
+
+  return d;
 }
