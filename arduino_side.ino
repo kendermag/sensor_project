@@ -14,6 +14,8 @@ const int ENA = 14;
 const int IN3 = 32; 
 const int IN4 = 33; 
 const int ENA_2 = 25;
+
+const int PHOTO_SENSOR_READ = 2;
  
 // ESP32 specific PWM setup 
 const int freq = 100;
@@ -118,6 +120,8 @@ void loop() {
       Serial.println("Before the client available loop");
       while (client.available()>0) {
 
+        int analog_value = analogRead(PHOTO_SENSOR_READ); // 4096 values
+        
         // ch_ = 'K';
         
         int num_ = client.read();
@@ -221,12 +225,12 @@ void loop() {
         }
         if(flagLIGHT){
           if(ch_ == 'I'){
-            if(flagLED_ON_OFF){
+            if(flagLED_ON_OFF || analog_value < 2048){
               Serial.println("Turn OFF");
               LightOff();
               flagLED_ON_OFF = false;
             }
-            else if(!flagLED_ON_OFF){
+            else if(!flagLED_ON_OFF || analog_value >= 2048){
               Serial.println("Turn ON");
               LightOn();
               flagLED_ON_OFF = true;
