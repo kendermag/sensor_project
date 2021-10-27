@@ -214,6 +214,10 @@ void loop() {
           }
         }
 
+        if(proximitySensorReadout() <= 10 ){
+          satu();
+        }
+
         ////////// STEER BACK TO MIDDLE 
         if(ch_ == 'M'){
           flagM = true;
@@ -231,18 +235,25 @@ void loop() {
         }
         if(flagLIGHT){
           if(ch_ == 'I'){
-            if(flagLED_ON_OFF || analog_value < 2048){
+            if(flagLED_ON_OFF){
               Serial.println("Turn OFF");
               LightOff();
               flagLED_ON_OFF = false;
             }
-            else if(!flagLED_ON_OFF || analog_value >= 2048){
+            else if(!flagLED_ON_OFF){
               Serial.println("Turn ON");
               LightOn();
               flagLED_ON_OFF = true;
             }
             flagLIGHT = false;
           }  
+        }
+
+        if(analog_value < 2048){
+          LightOff();
+        }
+        if(analog_value >= 2048){
+          LightOn();
         }
 
         if(ch_ != 'K'){
