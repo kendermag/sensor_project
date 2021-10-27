@@ -15,7 +15,7 @@ const int IN3 = 32;
 const int IN4 = 33; 
 const int ENA_2 = 25;
 
-const int PHOTO_SENSOR_READ = 2;
+const int PHOTO_SENSOR_READ = 35;
 
 const int HC_OUT = 18;
 const int HC_IN = 19;
@@ -32,8 +32,8 @@ const int resolution_pwm2 = 10; // this determines the pwm range, is specified i
 // WiFi network name and password:
 // substitute with the appropriate network properties where it is used
 // in this project the network is a smartphone hotspot
-const char* ssid = "network_ssid";
-const char* password = "network_passwd";
+const char* ssid = "szauronszeme";
+const char* password = "herbalherbal";
 
 // is led on or off
 bool flagLED_ON_OFF = false;
@@ -125,9 +125,20 @@ void loop() {
       char outBuf[20];   
       // Serial.println("Client is connected!");
       Serial.println("Before the client available loop");
+
+      int analog_value = analogRead(PHOTO_SENSOR_READ); // 4096 values
+      Serial.print("Analog read value: ");
+      Serial.println(analog_value);
+        
+      if(analog_value < 100){
+        LightOn();
+      }
+      if(analog_value >= 100){
+        LightOff();
+      }
+      
       while (client.available()>0) {
 
-        int analog_value = analogRead(PHOTO_SENSOR_READ); // 4096 values
         
         // ch_ = 'K';
         
@@ -215,9 +226,14 @@ void loop() {
           }
         }
 
-        if(proximitySensorReadout() <= 10 ){
+        /*
+        int prox_readout = proximitySensorReadout();
+        Serial.print("Prox sensor readout: ");
+        Serial.println(prox_readout);
+        if( prox_readout <= 10 ){
           satu();
         }
+        */
 
         ////////// STEER BACK TO MIDDLE 
         if(ch_ == 'M'){
@@ -250,12 +266,7 @@ void loop() {
           }  
         }
 
-        if(analog_value < 2048){
-          LightOff();
-        }
-        if(analog_value >= 2048){
-          LightOn();
-        }
+        
 
         if(ch_ != 'K'){
           Serial.print(ch_);
