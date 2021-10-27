@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
     private static final int SERVERPORT = 80;
 
     // hardcoded IP, this should be set to the IP that the ESP32 sets gives itself, (((hopefully it stays the same)))
-    public static String SERVER_IP = "192.168.126.89";
+    public static String SERVER_IP = "192.168.221.89";
 
     private static boolean flag = true;
 
