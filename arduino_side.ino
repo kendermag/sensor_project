@@ -31,8 +31,9 @@ const int resolution_pwm2 = 10; // this determines the pwm range, is specified i
 
 // WiFi network name and password:
 // substitute with the appropriate network properties where it is used
-const char* ssid = "szauronszeme";
-const char* password = "herbalherbal";
+// in this project the network is a smartphone hotspot
+const char* ssid = "network_ssid";
+const char* password = "network_passwd";
 
 // is led on or off
 bool flagLED_ON_OFF = false;
@@ -348,11 +349,11 @@ int proximitySensorReadout(){
   tick++;}while(digitalRead(HC_IN));
   long endtime = micros();
 
-  int result = endtime - timerstart;  //ez milisecben
+  int result = endtime - timerstart;  //milisecs
 
   int v = 343; //343 m/s
   
-  int d = result / 58; //ez pontatlanabb megoldás
+  int d = result / 58; //less precise solution
 
   return d;
 }
