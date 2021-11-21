@@ -2,6 +2,9 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
 
+#define SOUND_SPEED 0.034
+#define CM_TO_INCH 0.393701
+
 const int MIN_PULSE_WIDTH = 600;
 const int MAX_PULSE_WIDTH = 2600;
 const int FREQUENCY = 50;
@@ -17,8 +20,8 @@ const int ENA_2 = 25;
 
 const int PHOTO_SENSOR_READ = 35;
 
-const int HC_OUT = 18;
-const int HC_IN = 19;
+const int trigPin = 18;
+const int echoPin = 19;
  
 // ESP32 specific PWM setup 
 const int freq = 100;
@@ -32,11 +35,19 @@ const int resolution_pwm2 = 10; // this determines the pwm range, is specified i
 // WiFi network name and password:
 // substitute with the appropriate network properties where it is used
 // in this project the network is a smartphone hotspot
-const char* ssid = "szauronszeme";
-const char* password = "herbalherbal";
+const char* ssid = "########";
+const char* password = "########";
 
 // is led on or off
 bool flagLED_ON_OFF = false;
+
+//define sound speed in cm/uS
+#define SOUND_SPEED 0.034
+#define CM_TO_INCH 0.393701
+
+long duration;
+float distanceCm;
+float distanceInch;
 
 WiFiServer wifiServer(80);
 
@@ -54,8 +65,8 @@ void setup()
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
-  pinMode(HC_OUT, OUTPUT);
-  pinMode(HC_IN, INPUT);
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   
   // L298N PWM setup
   ledcSetup(pwmChannel, freq, resolution);
@@ -124,11 +135,11 @@ void loop() {
 
       char outBuf[20];   
       // Serial.println("Client is connected!");
-      Serial.println("Before the client available loop");
+      // Serial.println("Before the client available loop");
 
       int analog_value = analogRead(PHOTO_SENSOR_READ); // 4096 values
-      Serial.print("Analog read value: ");
-      Serial.println(analog_value);
+      // Serial.print("Analog read value: ");
+      // Serial.println(analog_value);
         
       if(analog_value < 100){
         LightOn();
@@ -136,7 +147,13 @@ void loop() {
       if(analog_value >= 100){
         LightOff();
       }
-      
+      int prox_readout = proximitySensorReadout();
+      Serial.print("Prox sensor readout: ");
+      Serial.println(prox_readout);
+      if( prox_readout < 25 ){
+        satu();
+        Serial.println("Less than 25");
+      }
       while (client.available()>0) {
 
         
@@ -226,14 +243,14 @@ void loop() {
           }
         }
 
-        /*
-        int prox_readout = proximitySensorReadout();
+        
+        prox_readout = proximitySensorReadout();
         Serial.print("Prox sensor readout: ");
         Serial.println(prox_readout);
-        if( prox_readout <= 10 ){
+        if( prox_readout < 25 ){
           satu();
         }
-        */
+        
 
         ////////// STEER BACK TO MIDDLE 
         if(ch_ == 'M'){
@@ -243,6 +260,7 @@ void loop() {
           if(ch_ == 'D'){
             turnBackMiddle();
             flagM = false;
+            Serial.println("Middle!");
           }  
         }
 
@@ -269,7 +287,7 @@ void loop() {
         
 
         if(ch_ != 'K'){
-          Serial.print(ch_);
+          // Serial.print(ch_);
         }
       }
     }
@@ -346,25 +364,23 @@ void satu(){
   ledcWrite(pwmChannel, 0);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
+  Serial.println("SATU");
 }
 
 int proximitySensorReadout(){
-  digitalWrite(HC_OUT, HIGH);
-  digitalWrite(HC_OUT, LOW);
-  byte tick = 0;
-  do{
-  tick++;}while(!digitalRead(HC_IN));
-  long timerstart = micros();
-
-  do{
-  tick++;}while(digitalRead(HC_IN));
-  long endtime = micros();
-
-  int result = endtime - timerstart;  //milisecs
-
-  int v = 343; //343 m/s
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
   
-  int d = result / 58; //less precise solution
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  
+  // Calculate the distance
+  distanceCm = duration * SOUND_SPEED / 2;
 
-  return d;
+  return int(distanceCm); 
 }
