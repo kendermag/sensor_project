@@ -1,3 +1,4 @@
 # sensor_project
 
-https://www.youtube.com/watch?v=9E9Z3NfLxsg
+Workings of the edge detection stream
+  https://www.youtube.com/watch?v=9E9Z3NfLxsg
