@@ -35,8 +35,8 @@ const int resolution_pwm2 = 10; // this determines the pwm range, is specified i
 // WiFi network name and password:
 // substitute with the appropriate network properties where it is used
 // in this project the network is a smartphone hotspot
-const char* ssid = "szauronszeme";
-const char* password = "herbalherbal";
+const char* ssid = "#########";
+const char* password = "#########";
 
 // is led on or off
 bool flagLED_ON_OFF = false;
