@@ -10,7 +10,7 @@ from multiprocessing import Process
 
 def send():
     cap_send = cv2.VideoCapture("nvarguscamerasrc \
-        ! video/x-raw(memory:NVMM), format=(string)NV12, width=(int)1080, height=(int)632, framerate=(fraction)30/1 \
+        ! video/x-raw(memory:NVMM), format=(string)NV12, width=(int)640, height=(int)480, framerate=(fraction)24/1 \
         ! nvvidconv ! video/x-raw, format=(string)RGBA ! videoconvert ! video/x-raw, format=(string)BGR ! appsink", cv2.CAP_GSTREAMER)
     
     
@@ -22,7 +22,7 @@ def send():
         ! rtmpsink location="rtmp://a.rtmp.youtube.com/live2/xxxx-xxxx-xxxx-xxxx-xxxx app=live2" \
         audiotestsrc \
         ! voaacenc bitrate=432 \
-        ! mux.',cv2.CAP_GSTREAMER,0, 30, (1080,632), True)
+        ! mux.',cv2.CAP_GSTREAMER,0, 24, (640,480), True)
 
     if not cap_send.isOpened() or not out_send.isOpened():
         print('VideoCapture or VideoWriter not opened')
