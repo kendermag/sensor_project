@@ -35,8 +35,8 @@ const int resolution_pwm2 = 10; // this determines the pwm range, is specified i
 // WiFi network name and password:
 // substitute with the appropriate network properties where it is used
 // in this project the network is a smartphone hotspot
-const char* ssid = "########";
-const char* password = "########";
+const char* ssid = "szauronszeme";
+const char* password = "herbalherbal";
 
 // is led on or off
 bool flagLED_ON_OFF = false;
@@ -109,7 +109,15 @@ void loop() {
   WiFiClient client = wifiServer.available();
  
   if (client) {
-    
+
+    bool stoppe_now = false;
+    int prev_readout0 = 100;
+    int prev_readout1 = 100;
+    int prev_readout2 = 100;
+    int prev_readout3 = 100;
+    int prev_readout4 = 100;
+    int prev_readout5 = 100;
+    bool lessThan25 = false;
     Serial.println("Before the client connected loop");
     while (client.connected()) {
       
@@ -132,13 +140,14 @@ void loop() {
       // client turnoff
       bool flagSTOP = false;
 
+      
 
       char outBuf[20];   
       // Serial.println("Client is connected!");
       // Serial.println("Before the client available loop");
 
       int analog_value = analogRead(PHOTO_SENSOR_READ); // 4096 values
-      // Serial.print("Analog read value: ");
+      // Serial.print("PHOTO_SENSOR_READ read value: ");
       // Serial.println(analog_value);
         
       if(analog_value < 100){
@@ -148,14 +157,37 @@ void loop() {
         LightOff();
       }
       int prox_readout = proximitySensorReadout();
-      Serial.print("Prox sensor readout: ");
+      prev_readout0 = prox_readout;
+      prev_readout1 = prev_readout0; 
+      prev_readout2 = prev_readout1;
+      prev_readout3 = prev_readout2; 
+      
+      Serial.print("PROX SENSOR READOUT: ");
       Serial.println(prox_readout);
-      if( prox_readout < 25 ){
+      Serial.println();
+      if( prox_readout < 40 and !stoppe_now and prev_readout0 < 40 and prev_readout1 < 40){
+        backwardAcceleration();
+        delayMicroseconds(500);
         satu();
-        Serial.println("Less than 25");
-      }
-      while (client.available()>0) {
+        satu();
+        lessThan25 = true;
 
+        Serial.println("Less than 25");
+        Serial.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+      }
+      if(prox_readout >= 40) lessThan25 = false;
+      if(prox_readout < 40) lessThan25 = true;
+      Serial.println();
+      Serial.print("stoppe_now VALUE: ");
+      Serial.println(stoppe_now);
+      Serial.println();
+      Serial.print("lessThan25 VALUE: ");
+      Serial.println(lessThan25); 
+      Serial.println();
+      Serial.println();
+      Serial.println();
+      Serial.println();
+      while (client.available()>0) {
         
         // ch_ = 'K';
         
@@ -166,8 +198,9 @@ void loop() {
         // }
         
         ////////// FORWARD
-        if(ch_ == 'F'){
+        if(ch_ == 'F' && !lessThan25){
           flagF = true;
+          stoppe_now = false;
         }        
         if(flagF){
           if(ch_ == 'W'){
@@ -177,6 +210,7 @@ void loop() {
             // wifiServer.write(outBuf);
             forwardAcceleration();
             flagF = false;
+            stoppe_now = false;
           }  
         }
 
@@ -191,6 +225,7 @@ void loop() {
             // wifiServer.write(outBuf);
             backwardAcceleration();
             flagB = false;
+            stoppe_now = true;
           }  
         }
 
@@ -232,6 +267,15 @@ void loop() {
           }
         }
 
+        prox_readout = proximitySensorReadout();
+        prev_readout0 = prox_readout;
+        prev_readout1 = prev_readout0; 
+        prev_readout2 = prev_readout1;
+        prev_readout3 = prev_readout2; 
+        Serial.print("Prox sensor readout: ");
+        Serial.println(prox_readout);
+        
+
         ////////// SATU = STOP MOTOR
         if(ch_ == 'X'){
           flagX = true;  
@@ -244,12 +288,6 @@ void loop() {
         }
 
         
-        prox_readout = proximitySensorReadout();
-        Serial.print("Prox sensor readout: ");
-        Serial.println(prox_readout);
-        if( prox_readout < 25 ){
-          satu();
-        }
         
 
         ////////// STEER BACK TO MIDDLE 
@@ -334,7 +372,7 @@ void forwardAcceleration(){
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
 
-  ledcWrite(pwmChannel, 750);
+  ledcWrite(pwmChannel, 810);
 }
 
 void backwardAcceleration(){
@@ -342,7 +380,7 @@ void backwardAcceleration(){
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
 
-  ledcWrite(pwmChannel, 750);
+  ledcWrite(pwmChannel, 810);
 }
 
 void LightOn(){
@@ -361,9 +399,10 @@ void LightOff(){
 }
 
 void satu(){
-  ledcWrite(pwmChannel, 0);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
+  
+  ledcWrite(pwmChannel, 0);
   Serial.println("SATU");
 }
 
